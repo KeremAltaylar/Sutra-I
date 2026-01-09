@@ -15,6 +15,7 @@ function Particle(r, g, b, x, y, stw) {
   };
 
   this.applyForce = function (force) {
+    if (!force) return;
     this.acc.add(force);
   };
 
@@ -62,6 +63,8 @@ function Particle(r, g, b, x, y, stw) {
   this.follow = function (vectors) {
     var x = floor(this.pos.x / scl);
     var y = floor(this.pos.y / scl);
+    x = constrain(x, 0, cols - 1);
+    y = constrain(y, 0, rows - 1);
     var index = x + y * cols;
     var force = vectors[index];
     this.applyForce(force);
@@ -85,6 +88,7 @@ function Particle2(r, g, b, x, y, stw) {
   };
 
   this.applyForce = function (force) {
+    if (!force) return;
     this.acc.add(force);
   };
 
@@ -128,6 +132,8 @@ function Particle2(r, g, b, x, y, stw) {
   this.follow = function (vectors) {
     var x = floor(this.pos.x / scl);
     var y = floor(this.pos.y / scl);
+    x = constrain(x, 0, cols - 1);
+    y = constrain(y, 0, rows - 1);
     var index = x + y * cols;
     var force = vectors[index];
     this.applyForce(force);

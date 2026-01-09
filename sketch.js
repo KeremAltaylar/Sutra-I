@@ -18,13 +18,15 @@ var indexk = 0;
 var sw1 = fxrandRange(0.1, 0.5, 0.1);
 var sw2 = fxrandRange(0.1, 0.5, 0.1);
 
-function setup() {
-  createCanvas(windowWidth, windowHeight);
-
-  cols = floor(windowWidth / scl);
-  rows = floor(windowHeight / scl);
-  fr = createP("");
+function recalculateFlowfieldGrid() {
+  cols = max(1, floor(windowWidth / scl));
+  rows = max(1, floor(windowHeight / scl));
   flowfield = new Array(cols * rows);
+}
+
+function resetParticles() {
+  particles = [];
+  particles2 = [];
   for (i = 0; i < 150; i++) {
     particles[i] = new Particle(
       cr,
@@ -45,7 +47,23 @@ function setup() {
       sw2
     );
   }
-  // background(235, 215, 141);
+}
+
+function restartSketch() {
+  indexk = 0;
+  zoff = 0;
+  recalculateFlowfieldGrid();
+  resetParticles();
+  background(255);
+  loop();
+}
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+
+  fr = createP("");
+  recalculateFlowfieldGrid();
+  resetParticles();
   background(255);
 }
 
@@ -58,10 +76,10 @@ function draw() {
     var xoff = 0;
     for (var x = 0; x < cols; x++) {
       var index = x + y * cols;
-      flowfield[index] = v;
       var angle = fxrand() * xoff;
       var v = p5.Vector.fromAngle(angle);
       v.setMag(magv);
+      flowfield[index] = v;
       xoff += inc;
       // stroke(255, 130);
       // push();
@@ -102,57 +120,48 @@ function draw() {
   indexk = indexk + 1;
   //console.log(indexk);
 }
+
+function mousePressed() {
+  restartSketch();
+}
+
+function touchStarted() {
+  restartSketch();
+  return false;
+}
+
 function windowResized() {
+  var previousWidth = width;
+  var previousHeight = height;
   resizeCanvas(windowWidth, windowHeight);
 
-  cols = floor(windowWidth / scl);
-  rows = floor(windowHeight / scl);
-  //fr = createP("");
-  flowfield = new Array(cols * rows);
+  var scaleX = previousWidth > 0 ? windowWidth / previousWidth : 1;
+  var scaleY = previousHeight > 0 ? windowHeight / previousHeight : 1;
 
-  for (i = 0; i < 200; i++) {
-    particles[i] = new Particle(
-      cr,
-      cg,
-      cb,
-      (fxrand() * i) / 10 + 30,
-      (fxrand() * i) / 5 + 30,
-      0.1
-    );
+  for (i = 0; i < particles.length; i++) {
+    if (!particles[i]) continue;
+    particles[i].pos.x *= scaleX;
+    particles[i].pos.y *= scaleY;
+    particles[i].prevPos.x *= scaleX;
+    particles[i].prevPos.y *= scaleY;
+    particles[i].vel.mult(0);
+    particles[i].acc.mult(0);
   }
-  for (i = 0; i < 200; i++) {
-    particles2[i] = new Particle(
-      dr,
-      dg,
-      db,
-      (fxrand() * i) / 10 + 300,
-      (fxrand() * i) / 5 + 300,
-      0.1
-    );
+  for (i = 0; i < particles2.length; i++) {
+    if (!particles2[i]) continue;
+    particles2[i].pos.x *= scaleX;
+    particles2[i].pos.y *= scaleY;
+    particles2[i].prevPos.x *= scaleX;
+    particles2[i].prevPos.y *= scaleY;
+    particles2[i].vel.mult(0);
+    particles2[i].acc.mult(0);
   }
-  push();
-  noStroke();
+
+  recalculateFlowfieldGrid();
+
   background(255);
-  rectMode(RADIUS);
-  fill(255);
-  //fill(alpha(50));
-  rect(
-    windowWidth / 2,
-    windowHeight / 2,
-    windowWidth / 2 - 30,
-    windowHeight / 2 - 30
-  );
-
-  rectMode(RADIUS);
-  fill(50, 1 * sin(millis() * 1000));
-  noStroke();
-  rect(
-    windowWidth / 2,
-    windowHeight / 2,
-    windowWidth / 2 - 30,
-    windowHeight / 2 - 30
-  );
-  pop();
+  indexk = 0;
+  loop();
 }
 
 function fxrandRange(min, max, step) {
